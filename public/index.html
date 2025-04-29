@@ -8,17 +8,38 @@
     rel="stylesheet"
     href="https://unpkg.com/@shopify/polaris@latest/dist/styles.css"
   />
+<script src="https://unpkg.com/@shopify/app-bridge@4.1.10"></script>
+<script src="https://unpkg.com/@shopify/app-bridge-react@4.1.10"></script>
 </head>
 <body>
   <div id="root"></div>
   <script src="https://unpkg.com/react/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@shopify/polaris@latest/dist/index.umd.js"></script>
-  <script>
-    const { AppProvider, Page, Card, TextStyle } = Polaris;
-    function App() {
-      return React.createElement(
-        AppProvider,
+<script>
+  // Grab Shopify config from window (we’ll inject these on the server)
+  const SHOPIFY_API_KEY    = "{{SHOPIFY_API_KEY}}";
+  const SHOPIFY_SHOP_ORIGIN = "{{SHOPIFY_STORE}}";
+  const BRIDGE = window['app-bridge'];
+  const createApp = BRIDGE.default;
+  const AppBridgeReact = window['app-bridge-react'];
+
+  // Initialize App Bridge
+  const app = createApp({
+    apiKey:    SHOPIFY_API_KEY,
+    shopOrigin: SHOPIFY_SHOP_ORIGIN,
+    forceRedirect: true
+  });
+
+  // Now render
+  const { AppProvider: PolarisProvider, Page, Card, TextStyle } = window.Polaris;
+
+  function App() {
+    return React.createElement(
+      AppBridgeReact.Provider,
+      { config: { apiKey: SHOPIFY_API_KEY, shopOrigin: SHOPIFY_SHOP_ORIGIN, forceRedirect: true } },
+      React.createElement(
+        PolarisProvider,
         {},
         React.createElement(
           Page,
@@ -33,12 +54,11 @@
             )
           )
         )
-      );
-    }
-    ReactDOM.render(
-      React.createElement(App),
-      document.getElementById("root")
+      )
     );
-  </script>
+  }
+
+  ReactDOM.render(React.createElement(App), document.getElementById("root"));
+</script>
 </body>
 </html>
