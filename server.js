@@ -1,8 +1,9 @@
 require('dotenv').config();
 const fs = require('fs');
 const express = require('express');
-const { Shopify } = require('@shopify/shopify-api');
 const path = require('path');
+// Use default export to ensure Context is available
+const Shopify = require('@shopify/shopify-api').default;
 
 // Load environment variables
 const {
@@ -32,7 +33,7 @@ Shopify.Context.initialize({
   SESSION_STORAGE: new Shopify.Session.MemorySessionStorage(),
 });
 
-// Read and prepare the HTML template
+// Prepare the HTML template with App Bridge placeholders
 const htmlPath = path.join(__dirname, 'public', 'index.html');
 let htmlTemplate = fs.readFileSync(htmlPath, 'utf8')
   .replace(/{{SHOPIFY_API_KEY}}/g, SHOPIFY_API_KEY)
@@ -43,10 +44,10 @@ const app = express();
 // Middleware to parse JSON bodies
 app.use(express.json());
 
-// Serve static assets
+// Serve static assets from /static
 app.use('/static', express.static(path.join(__dirname, 'public')));
 
-// Example API endpoint: fetch first 5 products
+// Sample API endpoint: fetch first 5 products
 app.get('/api/products', async (_req, res) => {
   try {
     const client = new Shopify.Clients.Rest(
