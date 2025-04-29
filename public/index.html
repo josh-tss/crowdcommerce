@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CrowdCommerce</title>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/@shopify/polaris@latest/dist/styles.css"
+  />
+</head>
+<body>
+  <div id="root"></div>
+  <script src="https://unpkg.com/react/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@shopify/polaris@latest/dist/index.umd.js"></script>
+  <script>
+    const { AppProvider, Page, Card, TextStyle } = Polaris;
+    function App() {
+      return React.createElement(
+        AppProvider,
+        {},
+        React.createElement(
+          Page,
+          { title: "CrowdCommerce" },
+          React.createElement(
+            Card,
+            { sectioned: true },
+            React.createElement(
+              TextStyle,
+              { variation: "strong" },
+              "Welcome to your CrowdCommerce Admin!"
+            )
+          )
+        )
+      );
+    }
+    ReactDOM.render(
+      React.createElement(App),
+      document.getElementById("root")
+    );
+  </script>
+</body>
+</html>
