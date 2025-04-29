@@ -2,8 +2,8 @@ require('dotenv').config();
 const fs = require('fs');
 const express = require('express');
 const path = require('path');
-// Use default export to ensure Context is available
-const Shopify = require('@shopify/shopify-api').default;
+// Import Shopify API
+const { Shopify } = require('@shopify/shopify-api');
 
 // Load environment variables
 const {
@@ -13,6 +13,12 @@ const {
   SHOPIFY_ADMIN_API_ACCESS_TOKEN,
   PORT = 3000,
 } = process.env;
+
+// Validate required env vars
+if (!SHOPIFY_API_KEY || !SHOPIFY_API_SECRET || !SHOPIFY_STORE || !SHOPIFY_ADMIN_API_ACCESS_TOKEN) {
+  console.error('Missing required Shopify environment variables. Check .env file.');
+  process.exit(1);
+}
 
 // Initialize Shopify API context
 Shopify.Context.initialize({
@@ -27,27 +33,26 @@ Shopify.Context.initialize({
     'write_customers',
     'read_orders',
   ],
-  HOST_NAME: SHOPIFY_STORE,
+  HOST_NAME: SHOPIFY_STORE.replace(/https?:\/\//, ''),
   HOST_SCHEME: 'https',
   IS_EMBEDDED_APP: true,
   SESSION_STORAGE: new Shopify.Session.MemorySessionStorage(),
 });
 
-// Prepare the HTML template with App Bridge placeholders
-const htmlPath = path.join(__dirname, 'public', 'index.html');
+// Read and prepare the HTML template with placeholders replaced by env vars\const htmlPath = path.join(__dirname, 'public', 'index.html');
 let htmlTemplate = fs.readFileSync(htmlPath, 'utf8')
   .replace(/{{SHOPIFY_API_KEY}}/g, SHOPIFY_API_KEY)
   .replace(/{{SHOPIFY_STORE}}/g, SHOPIFY_STORE);
 
 const app = express();
 
-// Middleware to parse JSON bodies
+// Middleware to parse JSON
 app.use(express.json());
 
-// Serve static assets from /static
+// Serve static assets
 app.use('/static', express.static(path.join(__dirname, 'public')));
 
-// Sample API endpoint: fetch first 5 products
+// Example REST API endpoint: fetch first 5 products
 app.get('/api/products', async (_req, res) => {
   try {
     const client = new Shopify.Clients.Rest(
@@ -62,12 +67,12 @@ app.get('/api/products', async (_req, res) => {
   }
 });
 
-// Fallback: serve the embedded app HTML
+// Fallback: serve the embedded app UI
 app.get('/*', (_req, res) => {
   res.status(200).send(htmlTemplate);
 });
 
 // Start the server
 app.listen(PORT, () => {
-  console.log(`> CrowdCommerce app is running on http://localhost:${PORT}`);
+  console.log(`> CrowdCommerce app running on http://localhost:${PORT}`);
 });
