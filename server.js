@@ -2,8 +2,10 @@ require('dotenv').config();
 const fs = require('fs');
 const express = require('express');
 const path = require('path');
-// Import Shopify API
-const { Shopify } = require('@shopify/shopify-api');
+
+// Import Shopify API (handle CommonJS/ESM exports)
+const ShopifyModule = require('@shopify/shopify-api');
+const Shopify = ShopifyModule.Shopify || ShopifyModule.default || ShopifyModule;
 
 // Load environment variables
 const {
@@ -39,8 +41,10 @@ Shopify.Context.initialize({
   SESSION_STORAGE: new Shopify.Session.MemorySessionStorage(),
 });
 
-// Read and prepare the HTML template with placeholders replaced by env vars\const htmlPath = path.join(__dirname, 'public', 'index.html');
-let htmlTemplate = fs.readFileSync(htmlPath, 'utf8')
+// Read and prepare the HTML template with App Bridge placeholders
+const htmlPath = path.join(__dirname, 'public', 'index.html');
+const rawHtml = fs.readFileSync(htmlPath, 'utf8');
+const htmlTemplate = rawHtml
   .replace(/{{SHOPIFY_API_KEY}}/g, SHOPIFY_API_KEY)
   .replace(/{{SHOPIFY_STORE}}/g, SHOPIFY_STORE);
 
@@ -49,7 +53,7 @@ const app = express();
 // Middleware to parse JSON
 app.use(express.json());
 
-// Serve static assets
+// Serve static assets under /static
 app.use('/static', express.static(path.join(__dirname, 'public')));
 
 // Example REST API endpoint: fetch first 5 products
@@ -67,7 +71,7 @@ app.get('/api/products', async (_req, res) => {
   }
 });
 
-// Fallback: serve the embedded app UI
+// Fallback route: serve the embedded app UI
 app.get('/*', (_req, res) => {
   res.status(200).send(htmlTemplate);
 });
